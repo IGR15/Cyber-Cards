@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "New Card", menuName = "Scriptable Objects/Card")]
 public class Card : ScriptableObject
@@ -7,39 +8,35 @@ public class Card : ScriptableObject
     public string cardName;
 
     public List<CardType> cardType;
-    public Sprite cardImage;
+    public Image cardImage;
     public int energyCost;
 
-    public int MinDamage;
-    public int MaxDamage;
-
-    public int Deffense;
+ 
     public string description;
 
-    public List<DamageType> damageType;
+    public List<AttributeValue> damageType;
 
-    public List<DeffenseType> deffenseType;
+    public List<AttributeValue> deffenseType;
 
     public enum CardType
     {
         Attack,
         Deffense,
         Utility,
-        Heal
+        
     }
 
-    public enum DamageType
+    public enum AttributeType
     {
         Confidentiality,
         Integrity,
-        Availability,
-        None
+        Availability
     }
-    public enum DeffenseType
+     [System.Serializable]
+    public struct AttributeValue
     {
-        Confidentiality,
-        Integrity,
-        Availability,
-        None
+        public AttributeType attributeType; // C, I, or A
+        public int value;
     }
+
 }
