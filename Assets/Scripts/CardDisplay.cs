@@ -10,7 +10,7 @@ public class CardDisplay : MonoBehaviour
     public Image[] cardTypeImage; //attack or defense
     public TMP_Text CardName;
 
-    public Image[] CardImage;
+    public Sprite CardImage;
     public TMP_Text EnergyCost;
     public TMP_Text C_Damage;
     public TMP_Text I_Damage;
@@ -23,7 +23,7 @@ public class CardDisplay : MonoBehaviour
     public void UpdateCardDisplay()
     {
         CardName.text = cardData.cardName;
-        CardImage[0].sprite = cardData.cardImage.sprite;
+        CardImage = cardData.cardImage;
         EnergyCost.text = cardData.energyCost.ToString();
 
         // Reset all type images to inactive

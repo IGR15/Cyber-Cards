@@ -8,7 +8,7 @@ public class Card : ScriptableObject
     public string cardName;
 
     public List<CardType> cardType;
-    public Image cardImage;
+    public Sprite cardImage;
     public int energyCost;
 
  
