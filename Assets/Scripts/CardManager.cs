@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CardManager : MonoBehaviour
 {
-     [Header("Card Prefabs and Slots")]
+    [Header("Card Prefabs and Slots")]
     public GameObject cardPrefab;
 
     [Header("Layout References")]
