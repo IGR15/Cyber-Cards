@@ -14,7 +14,7 @@ public class BattleZone : MonoBehaviour
 
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
     public bool PlaceCard(GameObject card, bool isPlayerBottom)
