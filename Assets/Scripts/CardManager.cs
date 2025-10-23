@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CardManager : MonoBehaviour
 {
-     [Header("Card Prefabs and Slots")]
+    [Header("Card Prefabs and Slots")]
     public GameObject cardPrefab;
 
     [Header("Layout References")]
@@ -20,6 +20,7 @@ public class CardManager : MonoBehaviour
 
     public void InitializeDeck()
     {
+        // Shuffle deck
         List<GameObject> shuffled = new(deckCards);
         for (int i = 0; i < shuffled.Count; i++)
         {
@@ -27,6 +28,7 @@ public class CardManager : MonoBehaviour
             (shuffled[i], shuffled[randomIndex]) = (shuffled[randomIndex], shuffled[i]);
         }
 
+        // Load into queue
         foreach (var card in shuffled)
             deckQueue.Enqueue(card);
 
@@ -34,13 +36,13 @@ public class CardManager : MonoBehaviour
         DisplayNextCardPreview();
     }
 
-    void DrawStartingHand()
+    private void DrawStartingHand()
     {
         for (int i = 0; i < 4 && deckQueue.Count > 0; i++)
             DrawCardToHand();
     }
 
-    void DrawCardToHand()
+    private void DrawCardToHand()
     {
         if (deckQueue.Count == 0) return;
         GameObject cardPrefabRef = deckQueue.Dequeue();
@@ -54,15 +56,37 @@ public class CardManager : MonoBehaviour
 
     public void OnCardPlayed(GameObject card)
     {
+        // Called when player drops card into BattleZone
         hand.Remove(card);
         Destroy(card);
-        DrawCardToHand();
-        DisplayNextCardPreview();
+
+        // Notify GameManager that this player has played a card
+        GameManager.Instance.OnPlayerPlayedCard(this);
     }
 
-    void DisplayNextCardPreview()
+    public void DrawNextCard()
     {
-        if (deckQueue.Count == 0) return;
+        // Draw next from queue after a round
+        if (deckQueue.Count > 0)
+        {
+            DrawCardToHand();
+            DisplayNextCardPreview();
+        }
+        else
+        {
+            if (nextCardInstance != null)
+                Destroy(nextCardInstance);
+        }
+    }
+
+    private void DisplayNextCardPreview()
+    {
+        if (deckQueue.Count == 0)
+        {
+            if (nextCardInstance != null)
+                Destroy(nextCardInstance);
+            return;
+        }
 
         GameObject nextCardPrefab = deckQueue.Peek();
 
@@ -71,5 +95,10 @@ public class CardManager : MonoBehaviour
 
         nextCardInstance = Instantiate(nextCardPrefab, smallSlot);
         nextCardInstance.transform.localScale = Vector3.one * 0.8f;
+
+        // Disable drag for preview
+        var drag = nextCardInstance.GetComponent<DraggableCard>();
+        if (drag != null)
+            Destroy(drag);
     }
 }
