@@ -85,7 +85,7 @@ public class BattleZone : MonoBehaviour
         topCards.RemoveAll(card => card == null);
         bottomCards.RemoveAll(card => card == null);
 
-        gameManager.OnRoundResolved();
+        gameManager.EndTurn();
     }
 
     /// <summary>

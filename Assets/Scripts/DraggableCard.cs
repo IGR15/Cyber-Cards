@@ -53,7 +53,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 rectTransform.anchoredPosition = Vector2.zero;
                 placed = true;
                 deckManager.OnCardPlayed(gameObject);
-                GameManager.Instance.OnRoundResolved();
+                GameManager.Instance.EndTurn();
                 break;
             }
         }

@@ -1,104 +1,87 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class CardManager : MonoBehaviour
 {
-    [Header("Card Prefabs and Slots")]
-    public GameObject cardPrefab;
-
-    [Header("Layout References")]
+    [Header("Data Sources")]
+    public CardDataBase cardDatabase;
     public Transform handRow;
-    public Transform smallSlot;
+    public GameObject cardPrefab;
+    [Header("Ownership")]
+    public bool IsPlayer; // true = bottom player, false = top enemy
+
 
     [Header("Deck Configuration")]
-    public List<GameObject> deckCards = new List<GameObject>(); // 8 total
-    private List<GameObject> hand = new List<GameObject>();
-    private Queue<GameObject> deckQueue = new Queue<GameObject>();
-    private GameObject nextCardInstance;
+    public int deckSize = 8;
+    public bool randomize = true;
 
-    public bool IsPlayer; // true = bottom player, false = top player
+    private List<Card> deck = new();
+    private List<GameObject> spawnedCards = new();
 
     public void InitializeDeck()
     {
-        // Shuffle deck
-        List<GameObject> shuffled = new(deckCards);
-        for (int i = 0; i < shuffled.Count; i++)
+        deck.Clear();
+
+        // Example: half attack, half defense
+        var attacks = cardDatabase.GetCardsByType(Card.CardType.Attack);
+        var defenses = cardDatabase.GetCardsByType(Card.CardType.Deffense);
+
+        for (int i = 0; i < deckSize / 2; i++)
         {
-            int randomIndex = Random.Range(i, shuffled.Count);
-            (shuffled[i], shuffled[randomIndex]) = (shuffled[randomIndex], shuffled[i]);
+            deck.Add(attacks[Random.Range(0, attacks.Count)]);
+            deck.Add(defenses[Random.Range(0, defenses.Count)]);
         }
 
-        // Load into queue
-        foreach (var card in shuffled)
-            deckQueue.Enqueue(card);
+        if (randomize)
+            Shuffle(deck);
 
-        DrawStartingHand();
-        DisplayNextCardPreview();
+        SpawnHand();
     }
 
-    private void DrawStartingHand()
+    void Shuffle(List<Card> list)
     {
-        for (int i = 0; i < 4 && deckQueue.Count > 0; i++)
-            DrawCardToHand();
+        for (int i = 0; i < list.Count; i++)
+        {
+            int r = Random.Range(i, list.Count);
+            (list[i], list[r]) = (list[r], list[i]);
+        }
     }
 
-    private void DrawCardToHand()
+    void SpawnHand()
     {
-        if (deckQueue.Count == 0) return;
-        GameObject cardPrefabRef = deckQueue.Dequeue();
-        GameObject newCard = Instantiate(cardPrefabRef, handRow);
-        hand.Add(newCard);
+        foreach (Transform child in handRow)
+            Destroy(child.gameObject);
 
-        var draggable = newCard.GetComponent<DraggableCard>();
-        if (draggable != null)
-            draggable.deckManager = this;
+        foreach (var card in deck)
+        {
+            GameObject cardObj = Instantiate(cardPrefab, handRow);
+            var display = cardObj.GetComponent<CardDisplay>();
+            display.cardData = card;
+            display.UpdateCardDisplay();
+            spawnedCards.Add(cardObj);
+        }
     }
-
     public void OnCardPlayed(GameObject card)
-    {
-        // Called when player drops card into BattleZone
-        hand.Remove(card);
-        Destroy(card);
+{
+    Debug.Log($"{card.name} was played from {name}");
 
-        // Notify GameManager that this player has played a card
-        GameManager.Instance.OnPlayerPlayedCard(this);
-    }
-
-    public void DrawNextCard()
+    // Example: remove the card from the player’s hand
+    if (handRow != null)
     {
-        // Draw next from queue after a round
-        if (deckQueue.Count > 0)
+        for (int i = 0; i < handRow.childCount; i++)
         {
-            DrawCardToHand();
-            DisplayNextCardPreview();
-        }
-        else
-        {
-            if (nextCardInstance != null)
-                Destroy(nextCardInstance);
+            if (handRow.GetChild(i).gameObject == card)
+            {
+                // Remove card from hand (optional logic)
+                break;
+            }
         }
     }
 
-    private void DisplayNextCardPreview()
-    {
-        if (deckQueue.Count == 0)
-        {
-            if (nextCardInstance != null)
-                Destroy(nextCardInstance);
-            return;
-        }
+    // Optional: move card to the BattleZone
+    var battleZone = FindFirstObjectByType<BattleZone>();
+    if (battleZone != null)
+        battleZone.PlaceCard(card, this);
+}
 
-        GameObject nextCardPrefab = deckQueue.Peek();
-
-        if (nextCardInstance != null)
-            Destroy(nextCardInstance);
-
-        nextCardInstance = Instantiate(nextCardPrefab, smallSlot);
-        nextCardInstance.transform.localScale = Vector3.one * 0.8f;
-
-        // Disable drag for preview
-        var drag = nextCardInstance.GetComponent<DraggableCard>();
-        if (drag != null)
-            Destroy(drag);
-    }
 }
